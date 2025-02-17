@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { defineProps, onMounted, PropType, reactive, ref } from 'vue'
-import { EnumAccountType, IAccount } from '../../types/account.types'
+import { defineProps, onMounted, ref } from 'vue'
+import { EnumAccountType } from '../../types/account.types'
 import { useAccountsStore } from '@/store/account.store'
 
 const store = useAccountsStore()
@@ -12,6 +12,40 @@ const props = defineProps({
 })
 const accountObject = store.accounts.find((acc) => acc.id === props.accountId)
 const isPasswordHidden = ref(true)
+const text = ref('')
+
+const isTagsVal = ref(true)
+const isLoginVal = ref(true)
+const isPasswordVal = ref(true)
+
+function convertTagsStringToArray (tagsString: string) {
+  if (!tagsString.trim()) {
+    return []
+  }
+  return tagsString.split(';').map(tag => ({ text: tag.trim() }))
+}
+
+const validateFields = () => {
+  if (!accountObject) return
+  const regex = /^[^;\s]+(;\s*[^;\s]+)*$/
+  isTagsVal.value = (regex.test(text.value) || text.value === '')
+  isLoginVal.value = (accountObject.login !== '')
+  isPasswordVal.value = (accountObject.password.length >= 8 || accountObject.accType === EnumAccountType.ldap)
+
+  if (isTagsVal.value && isLoginVal.value && isPasswordVal.value) {
+    store.saveAccount({
+      id: accountObject.id,
+      tags: convertTagsStringToArray(text.value),
+      accType: accountObject.accType,
+      login: accountObject.login,
+      password: accountObject.password
+    })
+  }
+}
+
+onMounted(() => {
+  text.value = accountObject?.tags.map(tag => tag.text).join('; ') || ''
+})
 </script>
 
 <template>
@@ -22,7 +56,8 @@ const isPasswordHidden = ref(true)
           : '1fr 150px 1fr 1fr 40px',
     }">
 
-    <input type="text" class="accounts__input" maxlength="50" v-model="accountObject.tags" />
+    <input type="text" class="accounts__input" :class="{'non-valid': !isTagsVal}" maxlength="50" v-model="text"
+           @blur="validateFields"/>
 
     <div class="accounts__select">
       <select v-model="accountObject.accType">
@@ -30,13 +65,16 @@ const isPasswordHidden = ref(true)
       </select>
     </div>
 
-    <input type="text" class="accounts__input" :class="{'long-login': accountObject.accType === EnumAccountType.ldap}"
-           placeholder="Логин" required maxlength="100" v-model="accountObject.login"/>
+    <input type="text" class="accounts__input"
+           :class="{'long-login': accountObject.accType === EnumAccountType.ldap, 'non-valid': !isLoginVal}"
+           placeholder="Логин" required maxlength="100" v-model="accountObject.login" @blur="validateFields"/>
 
     <div class="accounts__password" v-if="accountObject.accType === EnumAccountType.local">
-      <input type="password" class="accounts__input hide" required v-if="isPasswordHidden"
-             v-model="accountObject.password"/>
-      <input type="text" class="accounts__input show" required v-else v-model="accountObject.password"/>
+      <input type="password" class="accounts__input hide" :class="{'non-valid': !isPasswordVal}" required
+             v-if="isPasswordHidden"
+             v-model="accountObject.password" @blur="validateFields"/>
+      <input type="text" class="accounts__input show" :class="{'non-valid': !isPasswordVal}" required v-else
+             v-model="accountObject.password" @blur="validateFields"/>
 
       <button class="accounts__eye" @click="isPasswordHidden = !isPasswordHidden">
         <span class="accounts__eye-icon-hide" v-if="isPasswordHidden"></span>
@@ -107,5 +145,9 @@ const isPasswordHidden = ref(true)
     height: 20px;
     background-image: url("@/assets/password-show.svg");
   }
+}
+
+.non-valid {
+  border: 1px solid #f00;
 }
 </style>

@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import AccountRow from '@/components/AccountRow.vue'
-import { reactive } from 'vue'
+import { onMounted, reactive } from 'vue'
 import { EnumAccountType, IAccount } from '../../types/account.types'
 import { generateUuid } from '../../shared/functions'
 import { useAccountsStore } from '@/store/account.store'
 
 const store = useAccountsStore()
 
+onMounted(() => {
+  store.loadAccounts()
+})
 </script>
 
 <template>

@@ -5,7 +5,7 @@ export enum EnumAccountType {
 
 export interface IAccount {
   id: string,
-  tags: string[],
+  tags: {text: string}[],
   accType: EnumAccountType,
   login: string,
   password: string
