@@ -1,57 +1,19 @@
 <script setup lang="ts">
 import AccountRow from '@/components/AccountRow.vue'
-import { onMounted, reactive } from 'vue'
+import { reactive } from 'vue'
+import { EnumAccountType, IAccount } from '../../types/account.types'
+import { generateUuid } from '../../shared/functions'
+import { useAccountsStore } from '@/store/account.store'
 
-enum EnumAccountType {
-  local = 'Локальная',
-  ldap = 'LDAP'
-}
+const store = useAccountsStore()
 
-interface IAccount {
-  id: string,
-  tags: string[],
-  accType: EnumAccountType,
-  login: string,
-  password: string
-}
-function generateUuid () {
-  return '10000000-1000-4000-8000-100000000000'.replace(/[018]/g, c =>
-    (+c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> +c / 4).toString(16)
-  )
-}
-
-const accounts = reactive<IAccount[]>([
-  {
-    id: generateUuid(),
-    tags: [''],
-    accType: EnumAccountType.local,
-    login: '',
-    password: ''
-  }
-])
-
-const addAccount = () => {
-  accounts.push({
-    id: generateUuid(),
-    tags: [''],
-    accType: EnumAccountType.local,
-    login: '',
-    password: ''
-  })
-}
-
-const deleteRow = (id: string) => {
-  accounts.splice(accounts.findIndex((acc) => {
-    return acc.id === id
-  }), 1)
-}
 </script>
 
 <template>
   <div class="accounts">
     <div class="accounts__header">
       <h1 class="accounts__title">Учетные записи</h1>
-      <button class="accounts__add" @click="addAccount">+</button>
+      <button class="accounts__add" @click="store.addAccount()">+</button>
     </div>
 
     <div class="accounts__info">
@@ -69,7 +31,7 @@ const deleteRow = (id: string) => {
       </div>
 
       <div class="accounts__rows">
-        <AccountRow v-for="account in accounts" :key="account" :account-data="account" @delete-row="deleteRow"/>
+        <AccountRow v-for="account in store.accounts" :key="account" :account-id="account.id"/>
       </div>
     </div>
   </div>

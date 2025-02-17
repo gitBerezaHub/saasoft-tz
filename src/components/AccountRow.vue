@@ -1,41 +1,16 @@
 <script setup lang="ts">
 import { defineProps, onMounted, PropType, reactive, ref } from 'vue'
+import { EnumAccountType, IAccount } from '../../types/account.types'
+import { useAccountsStore } from '@/store/account.store'
 
-enum EnumAccountType {
-  local = 'Локальная',
-  ldap = 'LDAP'
-}
-
-interface IAccount {
-  id: string,
-  tags: string[],
-  accType: EnumAccountType,
-  login: string,
-  password: string
-}
-
+const store = useAccountsStore()
 const props = defineProps({
-  accountData: {
-    type: Object as PropType<IAccount>,
-    required: true
+  accountId: {
+    type: String,
+    require: true
   }
 })
-const accountObject = reactive<IAccount>({
-  id: '',
-  tags: [''],
-  accType: EnumAccountType.local,
-  login: '',
-  password: ''
-})
-onMounted(() => {
-  accountObject.id = props.accountData?.id
-  accountObject.tags = props.accountData?.tags
-  accountObject.accType = props.accountData?.accType
-  accountObject.login = props.accountData?.login
-  accountObject.password = props.accountData?.password
-  console.log(accountObject)
-})
-
+const accountObject = store.accounts.find((acc) => acc.id === props.accountId)
 const isPasswordHidden = ref(true)
 </script>
 
@@ -46,24 +21,30 @@ const isPasswordHidden = ref(true)
           ? '1fr 150px 2fr 40px'
           : '1fr 150px 1fr 1fr 40px',
     }">
+
     <input type="text" class="accounts__input" maxlength="50" v-model="accountObject.tags" />
+
     <div class="accounts__select">
       <select v-model="accountObject.accType">
         <option v-for="(value, key) in EnumAccountType" :key="key" :value="value">{{ value }}</option>
       </select>
     </div>
+
     <input type="text" class="accounts__input" :class="{'long-login': accountObject.accType === EnumAccountType.ldap}"
-           placeholder="Логин" required maxlength="100"/>
+           placeholder="Логин" required maxlength="100" v-model="accountObject.login"/>
+
     <div class="accounts__password" v-if="accountObject.accType === EnumAccountType.local">
       <input type="password" class="accounts__input hide" required v-if="isPasswordHidden"
              v-model="accountObject.password"/>
       <input type="text" class="accounts__input show" required v-else v-model="accountObject.password"/>
+
       <button class="accounts__eye" @click="isPasswordHidden = !isPasswordHidden">
         <span class="accounts__eye-icon-hide" v-if="isPasswordHidden"></span>
         <span class="accounts__eye-icon-show" v-else></span>
       </button>
     </div>
-    <div class="accounts__delete" @click="$emit('deleteRow', accountObject.id)">
+
+    <div class="accounts__delete" @click="store.deleteAccount(props.accountId)">
       <img src="@/assets/delete.svg" alt="" width="38">
     </div>
   </div>
