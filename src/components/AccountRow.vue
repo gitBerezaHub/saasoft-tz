@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script lang="ts" setup>
 import { defineProps, onMounted, ref } from 'vue'
 import { EnumAccountType } from '../../types/account.types'
 import { useAccountsStore } from '@/store/account.store'
@@ -49,14 +49,14 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="accounts__row" :style="{
+  <div :style="{
       gridTemplateColumns:
         accountObject.accType === EnumAccountType.ldap
           ? '1fr 150px 2fr 40px'
           : '1fr 150px 1fr 1fr 40px',
-    }">
+    }" class="accounts__row">
 
-    <input type="text" class="accounts__input" :class="{'non-valid': !isTagsVal}" maxlength="50" v-model="text"
+    <input v-model="text" :class="{'non-valid': !isTagsVal}" class="accounts__input" maxlength="50" type="text"
            @blur="validateFields"/>
 
     <div class="accounts__select">
@@ -65,30 +65,30 @@ onMounted(() => {
       </select>
     </div>
 
-    <input type="text" class="accounts__input"
-           :class="{'long-login': accountObject.accType === EnumAccountType.ldap, 'non-valid': !isLoginVal}"
-           placeholder="Логин" required maxlength="100" v-model="accountObject.login" @blur="validateFields"/>
+    <input v-model="accountObject.login" :class="{'long-login': accountObject.accType === EnumAccountType.ldap, 'non-valid': !isLoginVal}"
+           class="accounts__input"
+           maxlength="100" placeholder="Логин" required type="text" @blur="validateFields"/>
 
-    <div class="accounts__password" v-if="accountObject.accType === EnumAccountType.local">
-      <input type="password" class="accounts__input hide" :class="{'non-valid': !isPasswordVal}" required
-             v-if="isPasswordHidden"
-             v-model="accountObject.password" @blur="validateFields"/>
-      <input type="text" class="accounts__input show" :class="{'non-valid': !isPasswordVal}" required v-else
-             v-model="accountObject.password" @blur="validateFields"/>
+    <div v-if="accountObject.accType === EnumAccountType.local" class="accounts__password">
+      <input v-if="isPasswordHidden" v-model="accountObject.password" :class="{'non-valid': !isPasswordVal}" class="accounts__input hide"
+             required
+             type="password" @blur="validateFields"/>
+      <input v-else v-model="accountObject.password" :class="{'non-valid': !isPasswordVal}" class="accounts__input show" required
+             type="text" @blur="validateFields"/>
 
       <button class="accounts__eye" @click="isPasswordHidden = !isPasswordHidden">
-        <span class="accounts__eye-icon-hide" v-if="isPasswordHidden"></span>
-        <span class="accounts__eye-icon-show" v-else></span>
+        <span v-if="isPasswordHidden" class="accounts__eye-icon-hide"></span>
+        <span v-else class="accounts__eye-icon-show"></span>
       </button>
     </div>
 
     <div class="accounts__delete" @click="store.deleteAccount(props.accountId)">
-      <img src="@/assets/delete.svg" alt="" width="38">
+      <img alt="" src="@/assets/delete.svg" width="38">
     </div>
   </div>
 </template>
 
-<style scoped lang="scss">
+<style lang="scss" scoped>
 .accounts__row {
   display: grid;
   gap: 12px;

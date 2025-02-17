@@ -1,9 +1,9 @@
 <template>
-  <AccountsForm />
+  <AccountsForm/>
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted } from 'vue'
+import { defineComponent } from 'vue'
 import AccountsForm from '@/pages/AccountsForm.vue'
 
 export default defineComponent({
