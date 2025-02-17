@@ -60,7 +60,7 @@ onMounted(() => {
            @blur="validateFields"/>
 
     <div class="accounts__select">
-      <select v-model="accountObject.accType">
+      <select v-model="accountObject.accType" @change="validateFields">
         <option v-for="(value, key) in EnumAccountType" :key="key" :value="value">{{ value }}</option>
       </select>
     </div>
